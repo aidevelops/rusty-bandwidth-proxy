@@ -1,24 +1,19 @@
-FROM ubuntu:23.04
+FROM debian:12-slim
 
-# Prevent interactive prompts
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Install dependencies Rusty Bandwidth needs
 RUN apt-get update && apt-get install -y \
+    wget \
     libssl3 \
     libwebp-dev \
     libbrotli-dev \
-    libjxl-dev \
-    liblcms2-dev \
-    && rm -rf /var/lib/apt/lists/*
+    liblcms2-dev
 
-# Copy your binary
+# Install correct libjxl 0.11
+RUN wget http://archive.ubuntu.com/ubuntu/pool/universe/libj/libjxl/libjxl0.11_0.11.1-1_amd64.deb && \
+    apt-get install -y ./libjxl0.11_0.11.1-1_amd64.deb && \
+    rm libjxl0.11_0.11.1-1_amd64.deb
+
 COPY rusty-bandwidth /usr/local/bin/rusty-bandwidth
-
 RUN chmod +x /usr/local/bin/rusty-bandwidth
 
-# Expose the default port
 EXPOSE 8080
-
-# Run it
 CMD ["/usr/local/bin/rusty-bandwidth"]
