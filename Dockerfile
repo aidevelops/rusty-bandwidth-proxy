@@ -1,21 +1,28 @@
-FROM debian:12-slim
+FROM rust:1.78 as builder
 
+# Install dependencies for WebP & JPEG-XL
 RUN apt-get update && apt-get install -y \
-    wget \
-    libssl3 \
     libwebp-dev \
-    libbrotli-dev \
-    liblcms2-dev \
+    libjxl-dev \
+    pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
-# Install correct libjxl 0.11 (from old-releases)
-RUN wget http://old-releases.ubuntu.com/ubuntu/pool/universe/libj/libjxl/libjxl0.11_0.11.1-1_amd64.deb && \
-    apt-get install -y ./libjxl0.11_0.11.1-1_amd64.deb && \
-    rm libjxl0.11_0.11.1-1_amd64.deb
+WORKDIR /app
+COPY . .
 
-COPY rusty-bandwidth /usr/local/bin/rusty-bandwidth
-RUN chmod +x /usr/local/bin/rusty-bandwidth
+# Build in release mode
+RUN cargo build --release
+
+# Runtime image
+FROM debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y \
+    libwebp-dev \
+    libjxl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY --from=builder /app/target/release/rusty-bandwidth rusty-bandwidth
 
 EXPOSE 8080
-
-CMD ["/usr/local/bin/rusty-bandwidth"]
+CMD ["./rusty-bandwidth"]
