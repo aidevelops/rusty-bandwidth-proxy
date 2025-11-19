@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: rusty-bandwidth
+    env: rust
+    plan: free
+    buildCommand: |
+      apt-get update
+      apt-get install -y libwebp-dev libjxl-dev pkg-config
+      cargo build --release
+    startCommand: ./target/release/rusty-bandwidth
+    autoDeploy: true
