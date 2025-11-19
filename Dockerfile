@@ -1,20 +1,24 @@
-# Use minimal Debian image
-FROM debian:bookworm-slim
+FROM ubuntu:23.04
 
-# Update + install libs needed by Rusty Bandwidth
+# Prevent interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install dependencies Rusty Bandwidth needs
 RUN apt-get update && apt-get install -y \
     libssl3 \
     libwebp-dev \
+    libbrotli-dev \
     libjxl-dev \
+    liblcms2-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy app
+# Copy your binary
 COPY rusty-bandwidth /usr/local/bin/rusty-bandwidth
+
 RUN chmod +x /usr/local/bin/rusty-bandwidth
 
-# Render dynamically assigns PORT
-ENV PORT=10000
+# Expose the default port
+EXPOSE 8080
 
-EXPOSE ${PORT}
-
-CMD ["/usr/local/bin/rusty-bandwidth", "--port", "${PORT}", "--l", "30"]
+# Run it
+CMD ["/usr/local/bin/rusty-bandwidth"]
