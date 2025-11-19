@@ -4,11 +4,12 @@ FROM debian:bookworm-slim
 # Install dependencies
 RUN apt-get update && apt-get install -y libwebp-dev libjxl-dev && rm -rf /var/lib/apt/lists/*
 
-# Copy Rusty Bandwidth binary
+# Copy binary
 COPY rusty-bandwidth /usr/local/bin/rusty-bandwidth
+RUN chmod +x /usr/local/bin/rusty-bandwidth
 
-# Expose port for the proxy
-EXPOSE 10000
+# Expose Render-required port
+EXPOSE $PORT
 
-# Run Rusty Bandwidth
-CMD ["/usr/local/bin/rusty-bandwidth", "--port", "10000", "--l", "30"]
+# Run using Render's dynamic port
+CMD ["/usr/local/bin/rusty-bandwidth", "--port", "${PORT}", "--l", "30"]
